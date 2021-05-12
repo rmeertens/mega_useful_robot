@@ -1,0 +1,21 @@
+<launch>
+  <include file="$(find rplidar_ros)/launch/rplidar.launch"></include>
+
+
+<node pkg="laser_scan_matcher" type="laser_scan_matcher_node" name="map_scans_for_transforms" args="_fixed_frame:=/odom"></node>
+<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
+      <param name="particles" value="90"/> <!-- default is 30-->
+      <param name="srr" value="0.2"/> <!-- default is 0.1-->
+      <param name="srt" value="0.4"/> <!-- default is 0.2-->
+      <param name="str" value="0.2"/> <!-- default is 0.1-->
+      <param name="stt" value="0.4"/> <!-- default is 0.2-->
+</node>
+
+
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find mega_useful_robot)/rviz/mapping.rviz>
+</node>
+
+<node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster" args="0 0 0 0 0 0 base_link laser 100" />
+
+</launch>
+
