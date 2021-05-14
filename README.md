@@ -15,3 +15,11 @@ https://github.com/wolfeidau/ros-mpu9250-node
 
 
 http://wiki.ros.org/rosserial_arduino/Tutorials/Arduino%20IDE%20Setup
+
+
+
+Launch teleop using:
+
+rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+
+
