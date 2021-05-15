@@ -1,0 +1,6 @@
+<launch>
+
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find mega_useful_robot)/rviz/mapping.rviz">
+</node>
+
+</launch>
