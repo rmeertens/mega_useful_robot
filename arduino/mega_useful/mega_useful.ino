@@ -5,10 +5,11 @@
 #include <std_msgs/Int16.h>
 #include <Servo.h>
 
-ros::NodeHandle  nh;
-std_msgs::Int16 odometry_msg; 
-ros::Publisher pub_odometry( "left_wheeltick_sensor", &odometry_msg);
+bool debug_messages = false;
 
+ros::NodeHandle  nh;
+std_msgs::Int16 odometry_msg;
+ros::Publisher pub_odometry( "left_wheeltick_sensor", &odometry_msg);
 
 int left_pin = 8;
 int right_pin = 9;
@@ -30,7 +31,10 @@ Servo rightservo;  // create servo object to control a servo
 
 
 void leftmotormessage( const std_msgs::UInt8& motor_msg) {
-  nh.logfatal(showreceived);
+  if (debug_messages) {
+    nh.logfatal(showreceived);
+  }
+
   if (motor_msg.data <= 180) {
     leftservo.write(motor_msg.data);
   }
@@ -38,7 +42,9 @@ void leftmotormessage( const std_msgs::UInt8& motor_msg) {
 }
 
 void rightmotormessage( const std_msgs::UInt8& motor_msg) {
-  nh.logfatal(showreceived);
+  if (debug_messages) {
+    nh.logfatal(showreceived);
+  }
   if (motor_msg.data <= 180) {
     rightservo.write(motor_msg.data);
   }
@@ -73,18 +79,20 @@ void setup() {
 // Make sure the servos are set correctly to zero before going on ROS
 void loop() {
   if (initialised > 3) {
-    if((millis() - odometry_timer) > 50){ // publish wheel odometry every 50ms
+    if ((millis() - odometry_timer) > 50) { // publish wheel odometry every 50ms
 
-      char str[8];
-      itoa( counter, str, 10 );
+      if (debug_messages) {
+        char str[8];
+        itoa( counter, str, 10 );
 
-      nh.logfatal(str);
-
+        nh.logfatal(str);
+      }
+      
       odometry_msg.data = counter;
-     // odometry_msg.header.stamp = nh.now();
+      // odometry_msg.header.stamp = nh.now();
       pub_odometry.publish(&odometry_msg);
       odometry_timer = millis(); // reset the timer
-      
+
     }
     nh.spinOnce();
   }
