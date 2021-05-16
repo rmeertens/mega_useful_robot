@@ -10,6 +10,9 @@ from std_msgs.msg import UInt8
 
 last_twist = Twist()
 
+linear_gain = 20
+angular_gain = 15
+
 def callback(data):
     rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
 
@@ -38,8 +41,6 @@ def listener():
     rate = rospy.Rate(10) # 10hz
 
     center_point = 90
-    linear_gain = 10
-    angular_gain = 5
 
     while not rospy.is_shutdown():
         hello_str = "hello world %s" % rospy.get_time()
@@ -49,6 +50,8 @@ def listener():
 
         left_motor_speed = center_point + linear_gain*last_twist.linear.x + angular_gain*last_twist.angular.z
         right_motor_speed = center_point + linear_gain*last_twist.linear.x - angular_gain*last_twist.angular.z
+        message = "Setting left" + str(left_motor_speed) + 'right' + str(right_motor_speed)
+        rospy.logerr(message)
         pub_left.publish(left_motor_speed)
         pub_right.publish(right_motor_speed)
         rate.sleep()
