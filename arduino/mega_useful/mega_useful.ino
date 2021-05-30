@@ -8,15 +8,24 @@
 bool debug_messages = false;
 
 ros::NodeHandle  nh;
-std_msgs::Int16 odometry_msg;
-ros::Publisher pub_odometry( "left_wheeltick_sensor", &odometry_msg);
+std_msgs::Int16 odometry_msg_left;
+std_msgs::Int16 odometry_msg_right;
+ros::Publisher pub_odometry_left( "left_wheeltick_sensor", &odometry_msg_left);
+ros::Publisher pub_odometry_right( "right_wheeltick_sensor", &odometry_msg_right);
 
 int left_pin = 8;
 int right_pin = 9;
 
-int left_odometry_pin_white = 2;
-int left_odometry_pin_green = 3;
-volatile int16_t counter = 0;
+
+int left_odometry_pin_green = 2;
+int left_odometry_pin_white = 6;
+
+int right_odometry_pin_green = 3;
+int right_odometry_pin_white = 7;
+
+
+volatile int16_t counter_left = 0;
+volatile int16_t counter_right = 0;
 unsigned long odometry_timer;
 
 
@@ -63,16 +72,20 @@ void setup() {
   rightservo.attach(right_pin, 1000, 2000);
   rightservo.write(90);
 
-  pinMode(left_odometry_pin_white, INPUT_PULLUP);
+  
   pinMode(left_odometry_pin_green, INPUT_PULLUP);
+  pinMode(right_odometry_pin_green, INPUT_PULLUP);
 
-  attachInterrupt(digitalPinToInterrupt(left_odometry_pin_white), ai0, RISING);
-  attachInterrupt(digitalPinToInterrupt(left_odometry_pin_green), ai1, RISING);
+  attachInterrupt(digitalPinToInterrupt(left_odometry_pin_green), ai0, RISING);
+  attachInterrupt(digitalPinToInterrupt(right_odometry_pin_green), ai1, RISING);
+//      nh.getHardware()->setBaud(115200);
 
   nh.initNode();
+  
   nh.subscribe(sub_left);
   nh.subscribe(sub_right);
-  nh.advertise(pub_odometry);
+  nh.advertise(pub_odometry_left);
+  nh.advertise(pub_odometry_right);
 }
 
 
@@ -82,15 +95,18 @@ void loop() {
     if ((millis() - odometry_timer) > 50) { // publish wheel odometry every 50ms
 
       if (debug_messages) {
-        char str[8];
-        itoa( counter, str, 10 );
+        char str[20];
+        itoa( counter_left, str, 10 );
+        itoa( counter_right, str+10, 10 );
 
         nh.logfatal(str);
       }
       
-      odometry_msg.data = counter;
-      // odometry_msg.header.stamp = nh.now();
-      pub_odometry.publish(&odometry_msg);
+      odometry_msg_left.data = counter_left;
+      odometry_msg_right.data = counter_right;
+      
+      pub_odometry_left.publish(&odometry_msg_left);
+      pub_odometry_right.publish(&odometry_msg_right);
       odometry_timer = millis(); // reset the timer
 
     }
@@ -103,23 +119,18 @@ void loop() {
 }
 
 
-
 void ai0() {
-  // ai0 is activated if DigitalPin nr 2 is going from LOW to HIGH
-  // Check pin 3 to determine the direction
-  if (digitalRead(left_odometry_pin_green) == LOW) {
-    counter++;
+  if (digitalRead(left_odometry_pin_white) == LOW) {
+    counter_left++;
   } else {
-    counter--;
+    counter_left--;
   }
 }
 
 void ai1() {
-  // ai0 is activated if DigitalPin nr 3 is going from LOW to HIGH
-  // Check with pin 2 to determine the direction
-  if (digitalRead(left_odometry_pin_white) == LOW) {
-    counter--;
+  if (digitalRead(right_odometry_pin_white) == LOW) {
+    counter_right--;
   } else {
-    counter++;
+    counter_right++;
   }
 }
