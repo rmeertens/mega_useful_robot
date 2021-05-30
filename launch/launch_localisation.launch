@@ -1,5 +1,5 @@
 <launch>
-  <arg name="map_file" default="$(find mega_useful_robot)/maps/map_roland_02/map.yaml"/>
+  <arg name="map_file" default="$(find mega_useful_robot)/maps/map_roland_01/map.yaml"/>
   <arg name="scan_topic"     default="scan"/>
   <arg name="initial_pose_x" default="0.0"/>
   <arg name="initial_pose_y" default="0.0"/>
