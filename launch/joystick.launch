@@ -1,0 +1,9 @@
+<launch>
+
+<node pkg="joy" type="joy_node" name="joy"/>
+
+  <arg name="teleop_config" default="$(find mega_useful_robot)/param/joystick_param.yaml" />
+  <rosparam file="$(arg teleop_config)" command="load" />
+  <node pkg="joy_teleop" type="joy_teleop.py" name="joy_teleop">
+  </node>
+</launch>
