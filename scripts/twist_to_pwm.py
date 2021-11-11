@@ -8,7 +8,7 @@ last_twist = Twist()
 last_seconds = 0
 
 linear_gain = 80
-angular_gain = 45
+angular_gain = 25
 
 log_each = 10
 log_now = 0

@@ -1,9 +1,7 @@
 <launch>
-  <include file="$(find rplidar_ros)/launch/rplidar.launch"></include>
+  <node pkg="laser_scan_matcher" type="laser_scan_matcher_node" name="map_scans_for_transforms" args="_fixed_frame:=/odom"></node>
 
-
-<node pkg="laser_scan_matcher" type="laser_scan_matcher_node" name="map_scans_for_transforms" args="_fixed_frame:=/odom"></node>
-<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
+  <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
       <param name="particles" value="90"/> <!-- default is 30-->
       <param name="xmin" value="-30"/>
       <param name="xmax" value="30"/>
@@ -15,12 +13,5 @@
       <param name="srt" value="0.4"/> <!-- default is 0.2-->
       <param name="str" value="0.2"/> <!-- default is 0.1-->
       <param name="stt" value="0.4"/> <!-- default is 0.2-->
-</node>
-
-
-<node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster" args="0 0 0 3.1415 0 0 base_link laser 100" />
-
-<node pkg="rosserial_python" type="serial_node.py" args="/dev/ttyACM0" name="serial_node" respawn="true"/>
-
-<node pkg="mega_useful_robot" type="twist_to_pwm.py" name="twist_to_pwm" respawn="true"/>
+  </node>
 </launch>
