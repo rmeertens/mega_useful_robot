@@ -84,6 +84,8 @@ void StraightForwardRecovery::runBehavior()
   int num_tries = 0;
   while (n.ok() && num_tries < 10)
   {
+	  // Calculate the position of the robot if it moved forward N centimeters... 
+
 
 //      double footprint_cost = world_model_->footprintCost(x, y, theta, local_costmap_->getRobotFootprint(), 0.0, 0.0);
 /*      if (footprint_cost < 0.0)

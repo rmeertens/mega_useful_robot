@@ -6,9 +6,6 @@
   <arg name="initial_pose_a" default="0.0"/>
 
 
- <include file="$(find rplidar_ros)/launch/rplidar.launch"></include>
-
-
  <node pkg="laser_scan_matcher" type="laser_scan_matcher_node" name="map_scans_for_transforms" args="_fixed_frame:=/odom"></node>
 
 
