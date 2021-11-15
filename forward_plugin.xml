@@ -1,0 +1,7 @@
+<library path="lib/libmega_useful_robot">
+  <class name="mega_useful_robot/ForwardRecovery" type="straight_forward_recovery::StraightForwardRecovery" base_class_type="nav_core::RecoveryBehavior">
+    <description>
+      A recovery behavior that yeets forwards.
+    </description>
+  </class>
+</library>
