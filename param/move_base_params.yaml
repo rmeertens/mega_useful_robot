@@ -12,7 +12,7 @@ recovery_behaviors_enabled: true
 recovery_behaviors: 
   - name: aggressive_reset
     type: clear_costmap_recovery/ClearCostmapRecovery
-  - name: rita_verdonk
-    type: mega_useful_robot/ForwardRecovery
-  - name: rotate
-    type: rotate_recovery/RotateRecovery
+    #  - name: rita_verdonk
+    #  type: mega_useful_robot/ForwardRecovery
+    # - name: rotate
+    # type: rotate_recovery/RotateRecovery

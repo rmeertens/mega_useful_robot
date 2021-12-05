@@ -14,8 +14,7 @@ previousLeftEncoderCounts = 0
 previousRightEncoderCounts = 0 
 
 
-DistancePerCount = (3.14159265 * 0.13) / 2300
-lengthBetweenTwoWheels = 0.40
+
 
 last_time_encoder = None
 
@@ -31,16 +30,18 @@ def wheel_callback(data, topic_name):
     last_time_encoder = rospy.get_rostime().secs
 
     if topic_name == 'left': 
-        tick_x = data.data
+        tick_x = -1*data.data
     else: 
-        tick_y = data.data
+        tick_y = -1*data.data
 
 def wrap_int16(offset, prev_value, new_value): 
     int16_max = 32767 
     if prev_value > 20000 and new_value < -20000: 
-        offset += int16_max 
+        offset += 2*int16_max 
+        print('wrap')
     elif prev_value < -20000 and new_value > 20000: 
-        offset -= int16_max
+        offset -= 2*int16_max
+        print('wrap')
     return offset
 
 
@@ -48,12 +49,13 @@ def listener():
     global tick_x 
     global tick_y
 
+    print("started this node")
     rospy.init_node('wheeltick_to_odom', anonymous=False)
 
     rospy.Subscriber('/left_wheeltick_sensor', Int16, wheel_callback, callback_args='left')
     rospy.Subscriber('/right_wheeltick_sensor', Int16, wheel_callback, callback_args= 'right')
 
-
+    print("subsribed to some things")
     odom_pub = rospy.Publisher("odom", Odometry, queue_size=50)
     odom_broadcaster = tf.TransformBroadcaster()
 
@@ -61,11 +63,13 @@ def listener():
 
     _PreviousLeftEncoderCounts = None
     _PreviousRightEncoderCounts = None
-     
+    
+    prev_tick_x = None
+    prev_tick_y = None
+
     x = 0
     y = 0
     th = 0 
-
     offset_left = 0
     offset_right = 0 
 
@@ -73,9 +77,14 @@ def listener():
     while not rospy.is_shutdown():
         current_time = rospy.get_rostime()
 
-        if not _PreviousLeftEncoderCounts: 
+        if _PreviousLeftEncoderCounts == None: 
+            print("Init for the first time")
             _PreviousLeftEncoderCounts = tick_x;
             _PreviousRightEncoderCounts = tick_y;
+
+            prev_tick_x = tick_x 
+            prev_tick_y = tick_y
+
             last_time = current_time
                 
             continue
@@ -83,15 +92,25 @@ def listener():
         
         dt = current_time - last_time
 
-        offset_left = wrap_int16(offset_left, tick_x, _PreviousLeftEncoderCounts) 
-        offset_right = wrap_int16(offset_right, tick_y, _PreviousRightEncoderCounts) 
+        offset_left = wrap_int16(offset_left, tick_x, prev_tick_x) 
+        offset_right = wrap_int16(offset_right, tick_y, prev_tick_y) 
 
-        tick_x -= offset_left
-        tick_y -= offset_right
+        tick_left = tick_x - offset_left
+        tick_right = tick_y - offset_right
+
 
         # extract the wheel velocities from the tick signals count
-        deltaLeft = tick_x - _PreviousLeftEncoderCounts
-        deltaRight = tick_y - _PreviousRightEncoderCounts
+        deltaLeft = tick_left - _PreviousLeftEncoderCounts
+        deltaRight = tick_right - _PreviousRightEncoderCounts
+
+
+        lengthBetweenTwoWheels = float(rospy.get_param('/wheeltick_measure/distance_wheels', 0.4))
+        sizeWheels = float(rospy.get_param('/wheeltick_measure/size_wheels', 0.13))
+        hitsPerRound = float(rospy.get_param('/wheeltick_measure/hitsPerRound', 2900))
+
+        DistancePerCount = (3.14159265 * sizeWheels) / hitsPerRound
+        
+        print('param /wheeltick_measure/distance_wheels', lengthBetweenTwoWheels, 'size_wheels', sizeWheels, 'hitsPerRound', hitsPerRound)
 
         v_left = (deltaLeft * DistancePerCount) / (current_time - last_time).to_sec()
         v_right = (deltaRight * DistancePerCount) / (current_time - last_time).to_sec()
@@ -110,7 +129,8 @@ def listener():
         y += delta_y;
         th += delta_th;
 
-        print('odometry', x, y, th)
+        rospy.loginfo('odometry {} {} {}'.format(x, y, th))
+#        rospy.loginfo("Calculating some of the odometry")
 
         # since all odometry is 6DOF we'll need a quaternion created from yaw
         odom_quat = tf.transformations.quaternion_from_euler(0, 0, th)
@@ -172,8 +192,11 @@ def listener():
 
         #// publish the message
         #odom_pub.publish(odom);
-        _PreviousLeftEncoderCounts = tick_x;
-        _PreviousRightEncoderCounts = tick_y;
+        _PreviousLeftEncoderCounts = tick_left;
+        _PreviousRightEncoderCounts = tick_right;
+
+        prev_tick_x = tick_x
+        prev_tick_y = tick_y
 
         #last_time = current_time;
 
@@ -183,4 +206,5 @@ def listener():
 
 if __name__ == '__main__':
     print("starting listener")
+    print('of the pwm stuff')
     listener()

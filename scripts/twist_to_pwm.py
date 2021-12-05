@@ -3,6 +3,7 @@ import rospy
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 from std_msgs.msg import UInt8
+import numpy as np
 
 last_twist = Twist()
 last_seconds = 0
@@ -16,10 +17,12 @@ log_now = 0
 def twist_callback(data):
     global last_twist
     global last_seconds
-    rospy.loginfo(rospy.get_caller_id() + 'I heard twist message %s', data)
     last_twist = data
     last_seconds = rospy.get_rostime().secs
 
+    last_twist.linear.x = np.clip(last_twist.linear.x, -0.3, 0.3)
+    last_twist.angular.z = np.clip(last_twist.angular.z, -0.3, 0.3)
+    rospy.loginfo(rospy.get_caller_id() + 'I heard twist message %s', last_twist)
 
 
 def listener():
@@ -33,7 +36,7 @@ def listener():
 
     pub_left = rospy.Publisher('left_motor', UInt8, queue_size=10)
     pub_right = rospy.Publisher('right_motor', UInt8, queue_size=10)
-    rate = rospy.Rate(10) # 10hz
+    rate = rospy.Rate(40) # 40hz
 
     center_point = 90
 
